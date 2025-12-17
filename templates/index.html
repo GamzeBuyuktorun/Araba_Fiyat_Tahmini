@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Araç Fiyatı Tahmini (MLR)</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #e8eaf6; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; color: #3f51b5; border-bottom: 2px solid #3f51b5; padding-bottom: 10px; margin-bottom: 20px;}
+        form div { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        input[type="submit"] { width: 100%; background-color: #3f51b5; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        input[type="submit"]:hover { background-color: #303f9f; }
+        .prediction { text-align: center; margin-top: 25px; padding: 20px; background-color: #c5cae9; border: 1px solid #7986cb; border-radius: 5px; color: #303f9f; font-size: 1.4em; font-weight: bold; }
+        .info { background-color: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 0.9em; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Çoklu Doğrusal Regresyon ile Araç Fiyatı Tahmini</h1>
+        
+        <div class="info">
+            ℹ️ Bu model: Bayi Fiyatı, Kilometre, Yaş, Yakıt Tipi, Satıcı Tipi ve Vites Tipi özelliklerini kullanarak araç fiyatını tahmin eder.
+        </div>
+        
+        <form action="{{ url_for('predict') }}" method="post">
+            
+            <div>
+                <label for="Present_Price_Lakh">Bayi Fiyatı (Lakh, örn: 5.5 = 550.000 TL):</label>
+                <input type="text" id="Present_Price_Lakh" name="Present_Price_Lakh" 
+                       value="{{ request.form.get('Present_Price_Lakh', '5.5') if request.form else '5.5' }}" required>
+            </div>
+            
+            <div>
+                <label for="Kms">Kat Edilen KM (örn: 40000):</label>
+                <input type="text" id="Kms" name="Kms" 
+                       value="{{ request.form.get('Kms', '40000') if request.form else '40000' }}" required>
+            </div>
+
+            <div>
+                <label for="Age">Aracın Yaşı (Yıl, örn: 7):</label>
+                <input type="text" id="Age" name="Age" 
+                       value="{{ request.form.get('Age', '7') if request.form else '7' }}" required>
+            </div>
+            
+            <div>
+                <label for="Fuel_Type">Yakıt Tipi:</label>
+                <select id="Fuel_Type" name="Fuel_Type" required>
+                    <option value="Petrol" {{ 'selected' if request.form and request.form.get('Fuel_Type') == 'Petrol' else '' }}>Benzin</option>
+                    <option value="Diesel" {{ 'selected' if request.form and request.form.get('Fuel_Type') == 'Diesel' else '' }}>Dizel</option>
+                    <option value="CNG" {{ 'selected' if request.form and request.form.get('Fuel_Type') == 'CNG' else '' }}>CNG</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="Seller_Type">Satıcı Tipi:</label>
+                <select id="Seller_Type" name="Seller_Type" required>
+                    <option value="Dealer" {{ 'selected' if request.form and request.form.get('Seller_Type') == 'Dealer' else '' }}>Bayi</option>
+                    <option value="Individual" {{ 'selected' if request.form and request.form.get('Seller_Type') == 'Individual' else '' }}>Bireysel</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="Transmission">Vites Tipi:</label>
+                <select id="Transmission" name="Transmission" required>
+                    <option value="Manual" {{ 'selected' if request.form and request.form.get('Transmission') == 'Manual' else '' }}>Manuel</option>
+                    <option value="Automatic" {{ 'selected' if request.form and request.form.get('Transmission') == 'Automatic' else '' }}>Otomatik</option>
+                </select>
+            </div>
+            
+            <input type="submit" value="Fiyatı Tahmin Et">
+        </form>
+
+        {% if prediction_text %}
+        <div class="prediction">
+            {{ prediction_text }}
+        </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>
